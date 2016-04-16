@@ -3,7 +3,8 @@
 require('../dbprepare');
 const chai = require('chai');
 const should = chai.should();
-const User = require('../../src/models/user');
+const mongoose = require('mongoose');
+const User = mongoose.model('User');
 
 describe('User: model', function() {
 

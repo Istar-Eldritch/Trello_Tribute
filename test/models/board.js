@@ -4,8 +4,9 @@ require('../dbprepare');
 const chai = require('chai');
 const R = require('ramda');
 const should = chai.should();
-const User = require('../../src/models/user');
-const Board = require('../../src/models/board');
+const mongoose = require('mongoose');
+const User = mongoose.model('User');
+const Board = mongoose.model('Board');
 
 describe('Board: model', function() {
   describe('#create()', function() {

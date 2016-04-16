@@ -3,6 +3,12 @@
 const mongoose = require('mongoose');
 const config = require('config');
 
+//Bootstrap the models
+require('../src/models/user');
+require('../src/models/board');
+require('../src/models/card');
+
+
 beforeEach(function(done) {
 
   function cleanDB(done) {

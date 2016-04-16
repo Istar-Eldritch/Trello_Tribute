@@ -3,8 +3,8 @@
 const mongoose = require('mongoose');
 
 const Schema = mongoose.Schema;
-const User = require('./user');
-const Board = require('./board');
+const User = mongoose.model('User');
+const Board = mongoose.model('Board');
 
 /**
 * Card Schema
@@ -12,6 +12,7 @@ const Board = require('./board');
 const CardSchema = new Schema({
   name: String,
   desc: String,
+  listId: Schema.Types.ObjectId,
   creatorId: Schema.Types.ObjectId,
   boardId: Schema.Types.ObjectId
 });
@@ -28,21 +29,22 @@ CardSchema.virtual('creator')
   return this._creator;
 });
 
-
-CardSchema.virtual('board')
-.set(function(board) {
-  this._board = board;
-})
-.get(function() {
-  return this._board;
-});
-
-
 /**
 * Pre-save
 */
-CardSchema.pre('save', function(next) {
-  if(!this.isNew) return next();
+CardSchema.pre('save', function(done) {
+  if(!this.isNew) return done();
+
+  // Gets the id of the list and fills the boardId and the listId from the scope
+  let detailsForListId = (id, done) => {
+    this.listId = id;
+    if(this.boardId === undefined) {
+      Board.findOne({lists: {$elemMatch: {_id: id}}}, (err, result) => {
+        this.boardId = result.id;
+        done();
+      });
+    } else { done(); }
+  };
 
   // If the owner provided is not a crated user, then create it.
   if(this.creator && (this.creator instanceof User)) {
@@ -51,13 +53,11 @@ CardSchema.pre('save', function(next) {
     throw(new Error('Not creatorId or creator supplied'));
   }
 
-  if(this.board && (this.board instanceof Board)) {
-    this.boardId = this.board.id;
-  } else if(this.boardId === undefined) {
-    throw(new Error('Not creatorId or creator supplied'));
+  if(this.listId) {
+    detailsForListId(this.listId, done);
+  } else {
+    throw(new Error('No listId supplied'));
   }
-
-  return next();
 });
 
 

@@ -4,9 +4,10 @@ require('../dbprepare');
 const chai = require('chai');
 const R = require('ramda');
 const should = chai.should();
-const User = require('../../src/models/user');
-const Board = require('../../src/models/board');
-const Card = require('../../src/models/card');
+const mongoose = require('mongoose');
+const User = mongoose.model('User');
+const Board = mongoose.model('Board');
+const Card = mongoose.model('Card');
 
 
 describe('Card: Model', function() {
@@ -45,22 +46,24 @@ describe('Card: Model', function() {
 
   describe('#create()', function() {
 
-    it('should crate a new card providing a board and user', function(done) {
-      Card.create(R.merge(c, {board: board, creator: user}), function(err, newCard) {
+    it('should create a new card providing a list and user', function(done) {
+      Card.create(R.merge(c, {listId: board.lists[0]._id, creator: user}), function(err, newCard) {
         should.not.exist(err);
         newCard.desc.should.equal(c.desc);
         should.exist(newCard.creatorId);
         should.exist(newCard.boardId);
+        should.exist(newCard.listId);
         done();
       });
     });
 
-    it('should crate a new card providing a board id and user id', function(done) {
-      Card.create(R.merge(c, {creatorId: board.id, boardId: user.id}), function(err, newCard) {
+    it('should create a new card providing a list id and user id', function(done) {
+      Card.create(R.merge(c, {creatorId: user.id, listId: board.lists[0]._id}), function(err, newCard) {
         should.not.exist(err);
         newCard.desc.should.equal(c.desc);
         should.exist(newCard.creatorId);
         should.exist(newCard.boardId);
+        should.exist(newCard.listId);
         done();
       });
     });
