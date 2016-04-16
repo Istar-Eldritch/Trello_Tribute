@@ -15,7 +15,14 @@ const BoardSchema = new Schema({
   owner: {
     userId: Schema.Types.ObjectId,
     name: String
-  }
+  },
+  lists: [{
+    name: String,
+    id: {
+      type: Schema.Types.ObjectId,
+      default: Schema.Types.ObjectId()
+    }
+  }],
 });
 
 /**
