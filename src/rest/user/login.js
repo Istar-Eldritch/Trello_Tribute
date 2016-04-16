@@ -7,7 +7,13 @@ const User = mongoose.model('User');
 
 const SECRET = config.get('jwt_secret');
 
-// TODO Clean the callback hell with promises or generators
+
+/**
+* Logins the User
+* The function expects {email: String, password: String} as the body of the request
+* If the payload is valid this endpoints returns {token: String}
+* TODO Clean the callback hell with promises or generators
+*/
 function login (req, res) {
   if(req.body.email && req.body.password) {
     User.findOne({email: req.body.email}, function(err, user) {

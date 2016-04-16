@@ -20,7 +20,7 @@ const SECRET = config.get('jwt_secret');
 
 // Boostrap the models
 
-let User = require('./models/user');
+require('./models/user');
 require('./models/board');
 require('./models/card');
 require('./models/action');
@@ -29,7 +29,7 @@ app.use(bodyParser.json());
 
 server.listen(PORT, function() {
   mongoose.connect(DB, function(err) {
-    console.log(`Server listening on port ${PORT}, mode ${MODE}`);
+    console.log(err || `Server listening on port ${PORT}, mode ${MODE}`);
   });
 });
 
@@ -44,5 +44,5 @@ io.use(socketiojwt.authorize({
 
 io.on('connection', function(socket) {
   let auth = jwt.decode(socket.handshake.query.token, {complete: true}).payload;
-
+  
 });

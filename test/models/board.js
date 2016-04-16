@@ -33,7 +33,7 @@ describe('Board: model', function() {
           should.not.exist(err);
           newBoard.name.should.equal(b.name);
           newBoard.owner.name.should.equal(newUser.name);
-          should.exist(newBoard.owner.userId);
+          should.exist(newBoard.owner.id);
           done();
         });
 
@@ -50,7 +50,7 @@ describe('Board: model', function() {
         should.not.exist(err);
         newBoard.name.should.equal(b.name);
         newBoard.owner.name.should.equal(u.name);
-        should.exist(newBoard.owner.userId);
+        should.exist(newBoard.owner.id);
         done();
       });
 

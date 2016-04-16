@@ -12,7 +12,7 @@ const BoardSchema = new Schema({
   name: String,
   created: {type: Date, default: Date.now},
   owner: {
-    userId: Schema.Types.ObjectId,
+    id: Schema.Types.ObjectId,
     name: String
   },
   lists: [{
@@ -45,7 +45,7 @@ BoardSchema.pre('save', function(next) {
   if(this.user && (this.user instanceof User)) {
     this.owner = {
       name: this.user.name,
-      userId: this.user.id
+      id: this.user.id
     };
     return next();
   } else {
@@ -54,7 +54,7 @@ BoardSchema.pre('save', function(next) {
 
       this.owner = {
         name: newUser.name,
-        userId: newUser.id
+        id: newUser.id
       };
 
       return next();
