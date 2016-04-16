@@ -19,7 +19,8 @@
   "homepage": "https://github.com/Istar-Eldritch/Trello_Tribute#readme",
   "devDependencies": {
     "chai": "^3.5.0",
-    "mocha": "^2.4.5"
+    "mocha": "^2.4.5",
+    "ramda": "^0.21.0"
   },
   "dependencies": {
     "bcrypt": "^0.8.5",
