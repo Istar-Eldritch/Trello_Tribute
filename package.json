@@ -1,0 +1,33 @@
+{
+  "name": "trello_tribute",
+  "version": "1.0.0",
+  "description": "A kanban implementation following the trello ideas for learning and fun.",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Istar-Eldritch/Trello_Tribute.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Istar-Eldritch/Trello_Tribute/issues"
+  },
+  "homepage": "https://github.com/Istar-Eldritch/Trello_Tribute#readme",
+  "devDependencies": {
+    "chai": "^3.5.0",
+    "mocha": "^2.4.5"
+  },
+  "dependencies": {
+    "body-parser": "^1.15.0",
+    "config": "^1.20.1",
+    "express": "^4.13.4",
+    "jsonwebtoken": "^5.7.0",
+    "mongoose": "^4.4.12",
+    "socket.io": "^1.4.5",
+    "socketio-jwt": "^4.3.4"
+  }
+}
