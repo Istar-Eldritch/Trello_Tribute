@@ -7,7 +7,7 @@ const should = chai.should();
 const User = require('../../src/models/user');
 const Board = require('../../src/models/board');
 
-describe('User: model', function() {
+describe('Board: model', function() {
   describe('#create()', function() {
 
     let u = {

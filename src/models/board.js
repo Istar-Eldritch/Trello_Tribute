@@ -1,7 +1,6 @@
 'use strict';
 
 const mongoose = require('mongoose');
-const bcrypt = require('bcrypt');
 
 const Schema = mongoose.Schema;
 const User = require('./user');
@@ -42,7 +41,7 @@ BoardSchema.virtual('user')
 BoardSchema.pre('save', function(next) {
   if(!this.isNew) return next();
 
-  // If the owner provided does is not a crated user, then create it.
+  // If the owner provided is not a crated user, then create it.
   if(this.user && (this.user instanceof User)) {
     this.owner = {
       name: this.user.name,
