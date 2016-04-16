@@ -4,6 +4,7 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 
 const Schema = mongoose.Schema;
+const Errors = mongoose.Error;
 
 /**
 * User Schema
@@ -60,7 +61,9 @@ UserSchema.pre('save', function(next) {
   if(!this.isNew) return next();
 
   if(!(this.password && this.password.length > 5)) {
-    next(new Error('Invalid password'));
+    let error = new Errors.ValidationError(this);
+    error.errors.password = new Errors.ValidatorError('password', 'Not valid', 'Not valid', this.password);
+    next(error);
   }
   else {
     // Hash the password
