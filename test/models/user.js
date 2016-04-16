@@ -6,13 +6,15 @@ const should = chai.should();
 const User = require('../../src/models/user');
 
 describe('User: model', function() {
-  describe('#create()', function() {
 
-    let u = {
-      name: 'Ruben Paz',
-      email: 'me@ruben.io',
-      password: 'testing',
-    };
+  let u = {
+    name: 'Ruben Paz',
+    email: 'me@ruben.io',
+    password: 'testing',
+  };
+
+
+  describe('#create()', function() {
 
     it('should crate a new user', function(done) {
       User.create(u, function(err, newUser) {
@@ -44,4 +46,36 @@ describe('User: model', function() {
     });
 
   });
+
+
+  describe('#authenticate', function() {
+    var user = {};
+
+    beforeEach(function(done) {
+      User.create(u, function(err, newUser) {
+        user = newUser;
+        done();
+      });
+    });
+
+
+    it('should authenticate when provied a correct password', function(done) {
+      user.authenticate(u.password, function(err, result) {
+        should.not.exist(err);
+        result.should.be.true;
+        done();
+      });
+    });
+
+
+    it('should not authenticate when provied a wrong password', function(done) {
+      user.authenticate("not a good one", function(err, result) {
+        should.not.exist(err);
+        result.should.be.false;
+        done();
+      });
+    });
+  });
+
+
 });
