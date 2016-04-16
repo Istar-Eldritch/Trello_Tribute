@@ -7,6 +7,7 @@ const config = require('config');
 require('../src/models/user');
 require('../src/models/board');
 require('../src/models/card');
+require('../src/models/action');
 
 
 beforeEach(function(done) {
