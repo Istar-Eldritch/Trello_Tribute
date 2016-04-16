@@ -1,3 +1,4 @@
 {
-  "db": "mongodb://localhost/testing"
+  "db": "mongodb://localhost/testing",
+  "jwt_secret": "shhhhh"
 }
