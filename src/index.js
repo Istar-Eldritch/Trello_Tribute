@@ -48,6 +48,7 @@ io.use(socketiojwt.authorize({
 
 io.on('connection', function(socket) {
   require('./wsrooms/general')(socket); //Subscribe the socket to the general room
+  require('./wsrooms/board')(socket);
 });
 
 module.exports = server;

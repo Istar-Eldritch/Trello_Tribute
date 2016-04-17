@@ -4,7 +4,6 @@ const R = require('ramda');
 const mongoose = require('mongoose');
 const Board = mongoose.model('Board');
 const User = mongoose.model('User');
-const jwt = require('jsonwebtoken');
 
 
 function createboard(socket) {
