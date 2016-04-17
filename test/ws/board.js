@@ -124,8 +124,8 @@ describe('board: WS Room', function() {
         socket.emit(`board:watch`, board.id);
 
         socket.on(`${channel}:watch`, function(update) {
-          socket.emit(`${channel}:update`, {lists: [{name: 'Testing'}]} );
-          socket.on(`${channel}:update`, function(newBoard) {
+          socket.emit(`${channel}:updateboard`, {lists: [{name: 'Testing'}]} );
+          socket.on(`${channel}:updateboard`, function(newBoard) {
             socket.disconnect();
             should.exist(newBoard.lists[0]);
             should.exist(newBoard.lists[0]._id);
@@ -157,8 +157,8 @@ describe('board: WS Room', function() {
             client2.emit(`board:watch`, board.id);
 
             client2.on(`${channel}:watch`, function(update) {
-              client1.emit(`${channel}:update`, {name: 'Another'} );
-              client2.on(`${channel}:update`, function(newBoard) {
+              client1.emit(`${channel}:updateboard`, {name: 'Another'} );
+              client2.on(`${channel}:updateboard`, function(newBoard) {
                 client1.disconnect();
                 client2.disconnect();
 
