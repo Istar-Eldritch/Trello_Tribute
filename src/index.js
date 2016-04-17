@@ -33,6 +33,10 @@ server.listen(PORT, function() {
   });
 });
 
+server.on('close', function() {
+  mongoose.disconnect();
+});
+
 app.post('/register', require('./rest/user/register'));
 app.post('/login', require('./rest/user/login'));
 
@@ -43,6 +47,7 @@ io.use(socketiojwt.authorize({
 }));
 
 io.on('connection', function(socket) {
-  let auth = jwt.decode(socket.handshake.query.token, {complete: true}).payload;
-  
+  require('./wsrooms/general')(socket); //Subscribe the socket to the general room
 });
+
+module.exports = server;

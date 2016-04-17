@@ -4,12 +4,12 @@ const mongoose = require('mongoose');
 
 const Schema = mongoose.Schema;
 const User = mongoose.model('User');
-
+const Errors = mongoose.Error
 /**
 * Board Schema
 */
 const BoardSchema = new Schema({
-  name: String,
+  name: {type: String, required: true},
   created: {type: Date, default: Date.now},
   owner: {
     id: Schema.Types.ObjectId,
@@ -48,18 +48,19 @@ BoardSchema.pre('save', function(next) {
       id: this.user.id
     };
     return next();
-  } else {
-    User.create(this.user, (err, newUser) => {
-      if(err) { throw err; }
-
-      this.owner = {
-        name: newUser.name,
-        id: newUser.id
-      };
-
-      return next();
-    });
   }
-});
+
+  if(!(this.owner.id && this.owner.id instanceof Schema.Types.ObjectId)) {
+    let error = new Errors.ValidationError(this);
+    error.errors.password = new Errors.ValidatorError('owner.id', 'Not valid', 'Not valid', this.owner || this.owner.id);
+    next(error);
+  }
+
+  if(!this.owner.name) {
+    let error = new Errors.ValidationError(this);
+    error.errors.password = new Errors.ValidatorError('owner.name', 'Not valid', 'Not valid', this.owner || this.owner.name);
+    next(error);
+  }
+})
 
 module.exports = mongoose.model('Board', BoardSchema);

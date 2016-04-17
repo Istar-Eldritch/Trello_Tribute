@@ -41,31 +41,19 @@ describe('Board: model', function() {
 
     });
 
-
-    it('should create a new board and user', function(done) {
-
-      let board = R.merge(b, {user: u});
-
-      Board.create(board, function(err, newBoard) {
-        should.not.exist(err);
-        newBoard.name.should.equal(b.name);
-        newBoard.owner.name.should.equal(u.name);
-        should.exist(newBoard.owner.id);
-        done();
-      });
-
-    });
-
-
     it('should create ids for each one of the lists inserted', function(done) {
 
       let board = R.merge(b, {user: u});
+      User.create(u, function(err, newUser) {
+        let board = R.merge(b, {user: newUser});
 
-      Board.create(board, function(err, newBoard) {
-        should.not.exist(err);
-        newBoard.lists[0].name.should.equal(b.lists[0].name);
-        should.exist(newBoard.lists[0]._id);
-        done();
+        Board.create(board, function(err, newBoard) {
+          should.not.exist(err);
+          newBoard.lists[0].name.should.equal(b.lists[0].name);
+          should.exist(newBoard.lists[0]._id);
+          done();
+        });
+
       });
 
     });

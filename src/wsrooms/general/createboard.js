@@ -1,20 +1,27 @@
+'use strict';
+
 const R = require('ramda');
 const mongoose = require('mongoose');
 const Board = mongoose.model('Board');
+const User = mongoose.model('User');
+const jwt = require('jsonwebtoken');
 
 
 function createboard(socket) {
-  let auth = jwt.decode(socket.handshake.query.token, {complete: true}).payload;
+  let auth = socket.decoded_token;
 
   socket.on('general:createboard', function(board) {
-    Board.create(R.merge(board, {owner: auth}), function(err, result) {
-      if(err) {
-        socket.emit('general:createboard:error', err);
-      } else {
-        socket.to('general').emit('general:createboard', result);
-      }
+    User.findOne({_id: auth.id}, function (err, user) {
+      Board.create(R.merge(board, {user: user}), function(err, board) {
+        if(err) {
+          socket.emit('general:createboard:error', err);
+        } else {
+          socket.server.to('general').emit('general:createboard', board);
+        }
+      });
     });
   });
+
 }
 
 
