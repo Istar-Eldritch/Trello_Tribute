@@ -87,5 +87,30 @@ describe('general: WS Room', function() {
       });
 
     });
+
+
+    it('should notify all the users subscribed to general', function() {
+      let finalOptions = R.merge(options, {query: {token: token}});
+      let client1 = io.connect(socketUrl, finalOptions);
+
+      client1.on('connect', function() {
+        let client2 = io.connect(socketUrl, finalOptions);
+        client2.on('connect', function() {
+          client1.emit('general:createboard', b);
+
+          client2.on('general:createboard', function(result) {
+            client1.disconnect();
+            client2.disconnect();
+            Board.findOne({id: result.id}, function(err, createdboard) {
+              should.exist(createdboard);
+              done();
+            })
+          });
+        })
+
+      });
+    });
+
+
   });
 });
