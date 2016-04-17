@@ -10,9 +10,6 @@ before(function(done) {
 });
 
 
-after(function(done) {
+after(function() {
   server.close();
-  server.on('close', function() {
-    done();
-  });
 });

@@ -61,6 +61,17 @@ BoardSchema.pre('save', function(next) {
     error.errors.password = new Errors.ValidatorError('owner.name', 'Not valid', 'Not valid', this.owner || this.owner.name);
     next(error);
   }
+
+  this.lists = this.lists.map(elem => {
+    if(elem.id === undefined) {
+      return {
+        name: elem.name,
+        id: Schema.Types.ObjectId()
+      }
+    } else {
+      return elem;
+    }
+  });
 })
 
 module.exports = mongoose.model('Board', BoardSchema);

@@ -111,6 +111,68 @@ describe('board: WS Room', function() {
     });
 
 
+  });
+
+
+  describe('board:id:update', function() {
+
+
+    it('should be able to add a list', function(done) {
+      let socket = io.connect(socketUrl, R.merge(options, {query: {token: token1}}));
+
+      socket.on('connect', function(err) {
+        socket.emit(`board:watch`, board.id);
+
+        socket.on(`${channel}:watch`, function(update) {
+          socket.emit(`${channel}:update`, {lists: [{name: 'Testing'}]} );
+          socket.on(`${channel}:update`, function(newBoard) {
+            socket.disconnect();
+            should.exist(newBoard.lists[0]);
+            should.exist(newBoard.lists[0]._id);
+            newBoard.lists[0].name.should.equal('Testing');
+            done();
+          });
+
+          socket.on(`${channel}:update:error`, function(err) {
+            socket.disconnect();
+            should.not.exist(err);
+            done();
+          });
+        });
+
+      });
+    });
+
+
+    it('should notify all the users watching', function(done) {
+      let client1 = io.connect(socketUrl, R.merge(options, {query: {token: token1}}));
+
+      client1.on('connect', function(err) {
+        client1.emit(`board:watch`, board.id);
+
+        client1.on(`${channel}:watch`, function(update) {
+          let client2 = io.connect(socketUrl, R.merge(options, {query: {token: token2}}));
+
+          client2.on('connect', function(err) {
+            client2.emit(`board:watch`, board.id);
+
+            client2.on(`${channel}:watch`, function(update) {
+              client1.emit(`${channel}:update`, {name: 'Another'} );
+              client2.on(`${channel}:update`, function(newBoard) {
+                client1.disconnect();
+                client2.disconnect();
+
+                newBoard.name.should.equal('Another');
+                done();
+              });
+            });
+          });
+
+        });
+
+      });
+    });
+
 
   });
 
