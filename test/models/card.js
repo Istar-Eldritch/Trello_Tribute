@@ -8,7 +8,7 @@ const mongoose = require('mongoose');
 const User = mongoose.model('User');
 const Board = mongoose.model('Board');
 const Card = mongoose.model('Card');
-
+const Action = mongoose.model('Action');
 
 describe('Card: Model', function() {
 
@@ -65,6 +65,21 @@ describe('Card: Model', function() {
         should.exist(newCard.boardId);
         should.exist(newCard.listId);
         done();
+      });
+    });
+
+
+    it('should create the first action after creation with the user id', function(done) {
+      Card.create(R.merge(c, {creatorId: user.id, listId: board.lists[0]._id}), function(err, newCard) {
+        should.not.exist(err);
+        Action.findOne({cardId: newCard.id}, function(err, action) {
+          should.not.exist(err);
+          should.exist(action);
+          action.creatorId.toString().should.equal(newCard.creatorId.toString());
+          action.type.should.equal('creation');
+          done();
+        });
+
       });
     });
 

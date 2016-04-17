@@ -66,5 +66,18 @@ CardSchema.pre('save', function(done) {
   }
 });
 
+/**
+* Post Save
+*/
+CardSchema.post('save', function() {
+  const Action = mongoose.model('Action');
+  Action.create({
+    creatorId: this.creatorId,
+    cardId: this.id,
+    boardId: this.boardId,
+    listId: this.listId,
+    type: 'creation'
+  })
+});
 
 module.exports = mongoose.model('Card', CardSchema);
