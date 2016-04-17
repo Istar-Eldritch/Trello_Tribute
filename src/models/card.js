@@ -5,16 +5,18 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 const User = mongoose.model('User');
 const Board = mongoose.model('Board');
+const Errors = mongoose.Error;
 
 /**
 * Card Schema
 */
 const CardSchema = new Schema({
-  name: String,
+  name: {type: String, required: true},
   desc: String,
   listId: Schema.Types.ObjectId,
   creatorId: Schema.Types.ObjectId,
-  boardId: Schema.Types.ObjectId
+  boardId: Schema.Types.ObjectId,
+  deleted: {type: Boolean, default: false}
 });
 
 
@@ -50,13 +52,17 @@ CardSchema.pre('save', function(done) {
   if(this.creator && (this.creator instanceof User)) {
     this.creatorId = this.creator.id;
   } else if(this.creatorId === undefined) {
-    throw(new Error('Not creatorId or creator supplied'));
+    let error = new Errors.ValidationError(this);
+    error.errors.creatorId = new Errors.ValidatorError('creatorId', 'Not supplied', 'Not valid', this.creatorId);
+    done(error);
   }
 
   if(this.listId) {
     detailsForListId(this.listId, done);
   } else {
-    throw(new Error('No listId supplied'));
+    let error = new Errors.ValidationError(this);
+    error.errors.listId = new Errors.ValidatorError('listId', 'Not supplied', 'Not valid', this.listId);
+    done(error);
   }
 });
 

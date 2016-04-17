@@ -36,6 +36,11 @@ const b = {
   name: 'Testing'
 };
 
+const c = {
+  name: "Testing card",
+  desc: "Just a card to test the behaviour"
+};
+
 
 describe('board: WS Room', function() {
   var token1;
@@ -114,7 +119,7 @@ describe('board: WS Room', function() {
   });
 
 
-  describe('board:id:update', function() {
+  describe('board:id:updateboard', function() {
 
 
     it('should be able to add a list', function(done) {
@@ -172,6 +177,68 @@ describe('board: WS Room', function() {
 
       });
     });
+
+
+  });
+
+
+  describe('board:id:createcard', function() {
+
+    beforeEach(function(done) {
+      board.lists = [{name: 'Testing List'}];
+      board.save(function(err) {
+        if(err) {throw err;}
+        done();
+      });
+    });
+
+
+    it('should be able to create a card', function(done) {
+      let client1 = io.connect(socketUrl, R.merge(options, {query: {token: token1}}));
+
+      client1.on('connect', function(err) {
+        client1.emit(`board:watch`,board.id);
+        client1.on(`${channel}:watch`, function(update) {
+          client1.emit(`${channel}:createcard`, R.merge(c, {listId: board.lists[0]._id}));
+          client1.on(`${channel}:createcard`, function(card) {
+            client1.disconnect();
+            should.exist(card);
+            done();
+          });
+        });
+      });
+    });
+
+
+    it('should notify all the users watching', function(done) {
+      let client1 = io.connect(socketUrl, R.merge(options, {query: {token: token1}}));
+
+      client1.on('connect', function(err) {
+        client1.emit(`board:watch`, board.id);
+
+        client1.on(`${channel}:watch`, function(update) {
+          let client2 = io.connect(socketUrl, R.merge(options, {query: {token: token2}}));
+
+          client2.on('connect', function(err) {
+            client2.emit(`board:watch`, board.id);
+
+            client2.on(`${channel}:watch`, function(update) {
+              client1.emit(`${channel}:createcard`, R.merge(c, {listId: board.lists[0]._id}));
+              client2.on(`${channel}:createcard`, function(newCard) {
+                client1.disconnect();
+                client2.disconnect();
+
+                newCard.name.should.equal(c.name);
+                done();
+              });
+            });
+          });
+
+        });
+
+      });
+    });
+
 
 
   });
