@@ -289,4 +289,43 @@ describe('board: WS Room', function() {
 
   });
 
+
+  describe('board:id:getcards', function() {
+
+    var card;
+
+    beforeEach(function(done) {
+      board.lists = [{name: 'Testing List'}];
+      board.save(function(err) {
+        if(err) {throw err;}
+        Card.create(R.merge(c, {
+          listId: board.lists[0]._id,
+          boardId: board.id,
+          creatorId: user1.id}), function(err, newCard) {
+            card = newCard;
+            done();
+          });
+      });
+    });
+
+    it('should return the list of cards', function(done) {
+      let socket = io.connect(socketUrl, R.merge(options, {query: {token: token1}}));
+
+      socket.on('connect', function(err) {
+        socket.emit(`board:watch`, board.id);
+        socket.on(`${channel}:watch`, function(update) {
+          socket.emit(`${channel}:getcards`);
+          socket.on(`${channel}:getcards`, function(cards) {
+            card.id.should.equal(cards[0]._id);
+            done();
+          });
+        });
+
+      });
+    });
+
+
+  });
+
+
 });
