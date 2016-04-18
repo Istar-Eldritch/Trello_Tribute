@@ -75,7 +75,7 @@ describe('general: WS Room', function() {
           Board.findOne({id: result.id}, function(err, createdboard) {
             should.exist(createdboard);
             done();
-          })
+          });
         });
 
         socket.on('general:createboard:error', function(err) {
@@ -89,7 +89,7 @@ describe('general: WS Room', function() {
     });
 
 
-    it('should notify all the users subscribed to general', function() {
+    it('should notify all the users subscribed to general', function(done) {
       let finalOptions = R.merge(options, {query: {token: token}});
       let client1 = io.connect(socketUrl, finalOptions);
 
@@ -104,13 +104,42 @@ describe('general: WS Room', function() {
             Board.findOne({id: result.id}, function(err, createdboard) {
               should.exist(createdboard);
               done();
-            })
+            });
           });
-        })
+        });
 
       });
     });
 
 
+  });
+
+
+  describe('general:getboards', function() {
+    var board;
+
+    beforeEach(function(done) {
+      Board.create(R.merge(b, {user: user}), function(err, newBoard) {
+        board = newBoard;
+        done();
+      });
+    });
+
+    afterEach(function(done) {
+      Board.remove({}, () => {done();});
+    });
+
+    it('should return the list of boards', function(done) {
+      let finalOptions = R.merge(options, {query: {token: token}});
+      let socket = io.connect(socketUrl, finalOptions);
+
+      socket.on('connect', function(err) {
+        socket.emit('general:getboards');
+        socket.on('general:getboards', function(boards) {
+          board.id.should.equal(boards[0]._id);
+          done();
+        });
+      });
+    });
   });
 });
