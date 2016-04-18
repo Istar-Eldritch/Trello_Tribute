@@ -12,6 +12,7 @@ const SECRET = config.get('jwt_secret');
 const mongoose = require('mongoose');
 const Board = mongoose.model('Board');
 const User = mongoose.model('User');
+const Card = mongoose.model('Card');
 const jwt = require('jsonwebtoken');
 const R = require('ramda');
 
@@ -239,6 +240,51 @@ describe('board: WS Room', function() {
       });
     });
 
+  });
+
+  describe('board:id:createaction', function() {
+    var card;
+
+    beforeEach(function(done) {
+      board.lists = [{name: 'Testing List'}];
+      board.save(function(err) {
+        if(err) {throw err;}
+        Card.create(R.merge(c, {
+          listId: board.lists[0]._id,
+          boardId: board.id,
+          creatorId: user1.id}), function(err, newCard) {
+            card = newCard;
+            done();
+          });
+      });
+    });
+
+
+    it('should create a new action', function(done) {
+      let client1 = io.connect(socketUrl, R.merge(options, {query: {token: token1}}));
+
+      client1.on('connect', function(err) {
+        client1.emit(`board:watch`,board.id);
+        client1.on(`${channel}:watch`, function(update) {
+          client1.emit(`${channel}:createaction`, R.merge(c, {
+            listId: board.lists[0]._id,
+            cardId: card.id,
+            type: 'comment',
+            data: {
+              text: 'This is a comment in a card'
+            }
+          }));
+          client1.on(`${channel}:createaction`, function(action) {
+            client1.disconnect();
+            should.exist(action);
+            action.creatorId.should.equal(user1.id);
+            action.type.should.equal('comment');
+            should.exist(action.data.text);
+            done();
+          });
+        });
+      });
+    });
 
 
   });
