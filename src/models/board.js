@@ -4,13 +4,14 @@ const mongoose = require('mongoose');
 
 const Schema = mongoose.Schema;
 const User = mongoose.model('User');
-const Errors = mongoose.Error
+const Errors = mongoose.Error;
 /**
 * Board Schema
 */
 const BoardSchema = new Schema({
   name: {type: String, required: true},
   created: {type: Date, default: Date.now},
+  ownerId: Schema.Types.ObjectId,
   owner: {
     id: Schema.Types.ObjectId,
     name: String
@@ -47,6 +48,7 @@ BoardSchema.pre('save', function(next) {
       name: this.user.name,
       id: this.user.id
     };
+    this.ownerId = this.user.id;
     return next();
   }
 
@@ -67,11 +69,11 @@ BoardSchema.pre('save', function(next) {
       return {
         name: elem.name,
         id: Schema.Types.ObjectId()
-      }
+      };
     } else {
       return elem;
     }
   });
-})
+});
 
 module.exports = mongoose.model('Board', BoardSchema);

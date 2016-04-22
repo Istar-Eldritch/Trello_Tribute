@@ -9,6 +9,7 @@ const User = mongoose.model('User');
 const Board = mongoose.model('Board');
 const Card = mongoose.model('Card');
 const Action = mongoose.model('Action');
+const liftn = require('../../src/common/liftn');
 
 describe('Action: model', function() {
 
@@ -47,19 +48,28 @@ describe('Action: model', function() {
 
 
   beforeEach(function(done) {
+    let createUser = User.create.bind(User);
+    let createBoard = Board.create.bind(Board);
+    let createCard = Card.create.bind(Card);
 
-    User.create(u, function(err, newUser) {
+    function createBoardWithUser(newUser) {
       user = newUser;
-      Board.create(R.merge(b, {user: user}), function(err, newBoard) {
-        board = newBoard;
-        Card.create(R.merge(c, {listId: board.lists[0]._id, creator: user}), function(err, newCard) {
-          card = newCard;
-          done();
-          //TODO Refactor all this stuff to promises
-        });
+      return liftn(createBoard,R.merge(b, {user: user}));
+    }
 
-      });
-    });
+    function createCardWithBoard(newBoard) {
+      board = newBoard;
+      return liftn(createCard, R.merge(c, {listId: board.lists[0]._id, creatorId: user.id}));
+    }
+
+    createUser(u)
+    .then(createBoardWithUser)
+    .then(createCardWithBoard)
+    .then((newCard) => {
+      card = newCard;
+    })
+    .then(done)
+    .catch(done);
 
   });
 
@@ -68,7 +78,7 @@ describe('Action: model', function() {
 
 
     it('create a new action for a specific card', function(done) {
-      Action.create(R.merge(a, {user: user, board:board, card: card}), function(err, newAction) {
+      Action.create(R.merge(a, {user: user, board: board, card: card}), function(err, newAction) {
         should.not.exist(err);
         should.exist(newAction.creatorId);
         // newAction.creator.id.should.equal(user.id);

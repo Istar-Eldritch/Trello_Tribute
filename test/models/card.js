@@ -47,21 +47,13 @@ describe('Card: Model', function() {
   describe('#create()', function() {
 
     it('should create a new card providing a list and user', function(done) {
-      Card.create(R.merge(c, {listId: board.lists[0]._id, creator: user}), function(err, newCard) {
+      Card.create(R.merge(c, {listId: board.lists[0]._id, creatorId: user.id}), function(err, newCard) {
         should.not.exist(err);
         newCard.desc.should.equal(c.desc);
         should.exist(newCard.creatorId);
-        should.exist(newCard.boardId);
-        should.exist(newCard.listId);
-        done();
-      });
-    });
-
-    it('should create a new card providing a list id and user id', function(done) {
-      Card.create(R.merge(c, {creatorId: user.id, listId: board.lists[0]._id}), function(err, newCard) {
-        should.not.exist(err);
-        newCard.desc.should.equal(c.desc);
-        should.exist(newCard.creatorId);
+        should.exist(newCard.creator);
+        should.exist(newCard.creator.id);
+        should.exist(newCard.creator.name);
         should.exist(newCard.boardId);
         should.exist(newCard.listId);
         done();
