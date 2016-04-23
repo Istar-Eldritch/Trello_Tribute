@@ -9,16 +9,15 @@ function createaction(socket, board) {
 
   socket.on(`${room}:createaction`, function(action) {
     let finalAction = R.merge(action, {
-      boardId: board.id,
       creatorId: socket.decoded_token.id,
     });
 
-    Action.create(finalAction, function(err, newAction) {
-      if(err) {
-        socket.emit(`${room}:createaction:error`, err);
-      } else {
+    Action.create(finalAction)
+    .then(function(newAction) {
         socket.server.to(room).emit(`${room}:createaction`, newAction);
-      }
+    })
+    .catch(function(err) {
+      socket.emit(`${room}:createaction:error`, err);
     });
   });
 }

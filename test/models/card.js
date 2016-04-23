@@ -63,22 +63,20 @@ describe('Card: Model', function() {
 
 
     it('should create the first action after creation with the user id', function(done) {
-      Card.create(R.merge(c, {creatorId: user.id, listId: board.lists[0]._id}), function(err, newCard) {
-        should.not.exist(err);
-        Action.findOne({_id: newCard.actions[0]}, function(err, action) {
-          should.not.exist(err);
-          should.exist(action);
-          action.creatorId.toString().should.equal(newCard.creatorId.toString());
-          action.type.should.equal('creation');
-          done();
-        });
-
+      Card.create(R.merge(c, {creatorId: user.id, listId: board.lists[0]._id}))
+      .then(Card.populateActions)
+      .then(function(newCard) {
+        let action = newCard.actions[0];
+        should.exist(action);
+        action.type.should.equal('creation');
+        done();
       });
     });
 
 
     it('should have the list of actions embedded in the card', function(done) {
-      liftn(Card.create.bind(Card), R.merge(c, {creatorId: user.id, listId: board.lists[0]._id}))
+      Card.create(R.merge(c, {creatorId: user.id, listId: board.lists[0]._id}))
+      .then(Card.populateActions)
       .then(function(newCard) {
         should.exist(newCard);
         should.exist(newCard.actions);

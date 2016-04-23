@@ -20,13 +20,20 @@ const CardSchema = new Schema({
     id: Schema.Types.ObjectId,
     name: String,
   },
-  actions: [{
-    type: Schema.Types.ObjectId,
-    ref: 'Action'
-  }],
+  actions: [],
   boardId: Schema.Types.ObjectId,
   deleted: {type: Boolean, default: false}
 });
+
+
+CardSchema.statics.populateActions = function(card) {
+    let Action = mongoose.model('Action');
+    return Action.find({cardId: card.id})
+    .then(function(actions) {
+      card.actions = actions;
+      return card;
+    });
+  };
 
 
 /**
@@ -80,9 +87,6 @@ CardSchema.pre('save', function(done) {
       creatorId: this.creatorId,
       cardId: this.id,
       type: 'creation'
-    })
-    .then((newAction) => {
-      this.actions.push(newAction.id);
     });
   };
 

@@ -13,12 +13,13 @@ function createcard(socket, board) {
       creatorId: socket.decoded_token.id
     });
 
-    Card.create(finalCard, function(err, newCard) {
-      if(err) {
-        socket.emit(`${room}:createcard:error`, err);
-      } else {
-        socket.server.to(room).emit(`${room}:createcard`, newCard);
-      }
+    Card.create(finalCard)
+    .then(Card.populateActions)
+    .then(function(newCard) {
+      socket.server.to(room).emit(`${room}:createcard`, newCard);
+    })
+    .catch(function(err) {
+      socket.emit(`${room}:createcard:error`, err);
     });
   });
 }

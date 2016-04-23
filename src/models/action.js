@@ -20,6 +20,7 @@ const ActionSchema = new Schema({
     id: Schema.Types.ObjectId,
     name: String
   },
+  cardId: Schema.Types.ObjectId,
   created: {type: Date, default: Date.now},
   type: String, // TODO Define schemas for different types of data
   data: Object // Dynamic content
@@ -52,7 +53,19 @@ ActionSchema.pre('save', function(done) {
     }
   };
 
+  let validateCard = () => {
+    Card.findOne({_id: this.cardId})
+    .then(card => {
+      if(R.isNil(card)) {
+        let error = new Errors.ValidationError(this);
+        error.errors.creatorId = new Errors.ValidatorError('creatorId', 'Not supplied', 'Not valid', this.creatorId);
+        throw error;
+      }
+    });
+  };
+
   validateUser()
+  .then(validateCard)
   .then(done)
   .catch(done);
 
