@@ -9,7 +9,6 @@ const mongoose = require('mongoose');
 
 const app = express();
 const server = require('http').Server(app);
-const wrap = require('co-express');
 const io = require('socket.io')(server);
 
 const MODE = process.env.NODE_ENV;

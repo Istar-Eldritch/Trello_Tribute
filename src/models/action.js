@@ -15,12 +15,12 @@ const Card = mongoose.model('Card');
 * Action Schema
 */
 const ActionSchema = new Schema({
-  creatorId: Schema.Types.ObjectId,
+  creatorId: {type: Schema.Types.ObjectId, required: true},
   creator: {
     id: Schema.Types.ObjectId,
     name: String
   },
-  cardId: Schema.Types.ObjectId,
+  cardId: {type: Schema.Types.ObjectId, required: true},
   created: {type: Date, default: Date.now},
   type: String, // TODO Define schemas for different types of data
   data: Object // Dynamic content
@@ -34,13 +34,7 @@ ActionSchema.pre('save', function(done) {
   if(!this.isNew) return done();
 
   let validateUser = () => {
-    if(R.isNil(this.creatorId)) {
-      return new Promise((resolve, reject) => {
-        let error = new Errors.ValidationError(this);
-        error.errors.creatorId = new Errors.ValidatorError('creatorId', 'Not supplied', 'Not valid', this.creatorId);
-        reject(error);
-      });
-    } else if(R.isNil(this.creator) || (R.isNil(this.creator.id) || R.isNil(this.creator.name))) {
+    if(R.isNil(this.creator) || (R.isNil(this.creator.id) || R.isNil(this.creator.name))) {
 
       return User.findOne({_id: this.creatorId})
       .then((user) => {
@@ -53,19 +47,8 @@ ActionSchema.pre('save', function(done) {
     }
   };
 
-  let validateCard = () => {
-    Card.findOne({_id: this.cardId})
-    .then(card => {
-      if(R.isNil(card)) {
-        let error = new Errors.ValidationError(this);
-        error.errors.creatorId = new Errors.ValidatorError('creatorId', 'Not supplied', 'Not valid', this.creatorId);
-        throw error;
-      }
-    });
-  };
 
   validateUser()
-  .then(validateCard)
   .then(done)
   .catch(done);
 

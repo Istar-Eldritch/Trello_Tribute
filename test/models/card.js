@@ -48,7 +48,7 @@ describe('Card: Model', function() {
   describe('#create()', function() {
 
     it('should create a new card providing a list and user', function(done) {
-      Card.create(R.merge(c, {listId: board.lists[0]._id, creatorId: user.id}), function(err, newCard) {
+      Card.create(R.merge(c, {boardId: board.id, listId: board.lists[0]._id, creatorId: user.id}), function(err, newCard) {
         should.not.exist(err);
         newCard.desc.should.equal(c.desc);
         should.exist(newCard.creatorId);
@@ -63,7 +63,7 @@ describe('Card: Model', function() {
 
 
     it('should create the first action after creation with the user id', function(done) {
-      Card.create(R.merge(c, {creatorId: user.id, listId: board.lists[0]._id}))
+      Card.create(R.merge(c, {boardId: board.id, creatorId: user.id, listId: board.lists[0]._id}))
       .then(Card.populateActions)
       .then(function(newCard) {
         let action = newCard.actions[0];
@@ -75,7 +75,7 @@ describe('Card: Model', function() {
 
 
     it('should have the list of actions embedded in the card', function(done) {
-      Card.create(R.merge(c, {creatorId: user.id, listId: board.lists[0]._id}))
+      Card.create(R.merge(c, {boardId: board.id, creatorId: user.id, listId: board.lists[0]._id}))
       .then(Card.populateActions)
       .then(function(newCard) {
         should.exist(newCard);

@@ -48,21 +48,18 @@ describe('Action: model', function() {
 
 
   beforeEach(function(done) {
-    let createUser = User.create.bind(User);
-    let createBoard = Board.create.bind(Board);
-    let createCard = Card.create.bind(Card);
 
     function createBoardWithUser(newUser) {
       user = newUser;
-      return liftn(createBoard,R.merge(b, {user: user}));
+      return Board.create(R.merge(b, {user: user}));
     }
 
     function createCardWithBoard(newBoard) {
       board = newBoard;
-      return liftn(createCard, R.merge(c, {listId: board.lists[0]._id, creatorId: user.id}));
+      return Card.create(R.merge(c, {boardId: board.id, listId: board.lists[0]._id, creatorId: user.id}));
     }
 
-    createUser(u)
+    User.create(u)
     .then(createBoardWithUser)
     .then(createCardWithBoard)
     .then((newCard) => {
@@ -78,7 +75,7 @@ describe('Action: model', function() {
 
 
     it('create a new action for a specific card', function(done) {
-      Action.create(R.merge(a, {creatorId: user.id}), function(err, newAction) {
+      Action.create(R.merge(a, {creatorId: user.id, cardId: card.id}), function(err, newAction) {
         should.not.exist(err);
         should.exist(newAction.creatorId);
         should.exist(newAction.creator);
@@ -88,6 +85,19 @@ describe('Action: model', function() {
       });
     });
 
+    it('throw an error when no cardId is specified', function(done) {
+      Action.create(R.merge(a, {creatorId: user.id}), function(err, newAction) {
+        should.exist(err);
+        done();
+      });
+    });
+
+    it('throw an error when no creatorId is specified', function(done) {
+      Action.create(R.merge(a, {cardId: card.id}), function(err, newAction) {
+        should.exist(err);
+        done();
+      });
+    });
 
   });
 });

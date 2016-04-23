@@ -267,7 +267,6 @@ describe('board: WS Room', function() {
         client1.emit(`board:watch`,board.id);
         client1.on(`${channel}:watch`, function(update) {
           client1.emit(`${channel}:createaction`, R.merge(c, {
-            listId: board.lists[0]._id,
             cardId: card.id,
             type: 'comment',
             data: {

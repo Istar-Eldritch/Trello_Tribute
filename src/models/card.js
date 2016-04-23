@@ -3,6 +3,8 @@
 const mongoose = require('mongoose');
 
 const Schema = mongoose.Schema;
+const ObjectId = Schema.Types.ObjectId;
+
 const User = mongoose.model('User');
 const Board = mongoose.model('Board');
 const Errors = mongoose.Error;
@@ -14,26 +16,33 @@ const R = require('ramda');
 const CardSchema = new Schema({
   name: {type: String, required: true},
   desc: String,
-  listId: Schema.Types.ObjectId,
-  creatorId: Schema.Types.ObjectId,
+  creatorId: {type: ObjectId, required: true},
   creator: {
     id: Schema.Types.ObjectId,
     name: String,
   },
   actions: [],
-  boardId: Schema.Types.ObjectId,
+  boardId: {type: ObjectId, required: true},
   deleted: {type: Boolean, default: false}
+});
+
+CardSchema.virtual('listId')
+.set(function(listId) {
+  this._listId = listId;
+})
+.get(function() {
+  return this._listId;
 });
 
 
 CardSchema.statics.populateActions = function(card) {
-    let Action = mongoose.model('Action');
-    return Action.find({cardId: card.id})
-    .then(function(actions) {
-      card.actions = actions;
-      return card;
-    });
-  };
+  let Action = mongoose.model('Action');
+  return Action.find({cardId: card.id})
+  .then(function(actions) {
+    card.actions = actions;
+    return card;
+  });
+};
 
 
 /**
@@ -42,33 +51,8 @@ CardSchema.statics.populateActions = function(card) {
 CardSchema.pre('save', function(done) {
   if(!this.isNew) return done();
 
-  // Gets the id of the list and fills the boardId and the listId from the scope
-  let validateList = () => {
-    if(R.isNil(this.listId)){
-      return new Promise((resolve, reject) => {
-        let error = new Errors.ValidationError(this);
-        error.errors.listId = new Errors.ValidatorError('listId', 'Not supplied', 'Not valid', this.listId);
-        reject(error);
-      });
-    } else {
-      if(this.boardId === undefined) {
-        return Board.findOne({lists: {$elemMatch: {_id: this.listId}}})
-        .then((result) => {
-          this.boardId = result.id;
-          return result;
-        });
-      }
-    }
-  };
-
-  let validateUser = () => {
-    if(R.isNil(this.creatorId)) {
-      return new Promise((resolve, reject) => {
-        let error = new Errors.ValidationError(this);
-        error.errors.creatorId = new Errors.ValidatorError('creatorId', 'Not supplied', 'Not valid', this.creatorId);
-        reject(error);
-      });
-    } else if(R.isNil(this.creator) || (R.isNil(this.creator.id) || R.isNil(this.creator.name))) {
+  let insertCreator = () => {
+    if(R.isNil(this.creator) || (R.isNil(this.creator.id) || R.isNil(this.creator.name))) {
 
       return User.findOne({_id: this.creatorId})
       .then((user) => {
@@ -82,16 +66,24 @@ CardSchema.pre('save', function(done) {
   };
 
   let createAction = () => {
+    if(R.isNil(this._listId)) {
+      let error = new Errors.ValidationError(this);
+      error.errors.listId = new Errors.ValidatorError('listId', 'Not valid', 'Not valid', this.listId);
+      throw error;
+    }
+
     let Action = mongoose.model('Action');
     return Action.create({
       creatorId: this.creatorId,
       cardId: this.id,
-      type: 'creation'
+      type: 'creation',
+      data: {
+        listId: this.listId
+      }
     });
   };
 
-  validateUser()
-  .then(validateList)
+  insertCreator()
   .then(createAction)
   .then(done)
   .catch(done);
