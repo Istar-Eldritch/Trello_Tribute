@@ -3,6 +3,7 @@
 require('../dbprepare');
 const chai = require('chai');
 const R = require('ramda');
+const liftn = require('../../src/common/liftn');
 const should = chai.should();
 const mongoose = require('mongoose');
 const User = mongoose.model('User');
@@ -64,7 +65,7 @@ describe('Card: Model', function() {
     it('should create the first action after creation with the user id', function(done) {
       Card.create(R.merge(c, {creatorId: user.id, listId: board.lists[0]._id}), function(err, newCard) {
         should.not.exist(err);
-        Action.findOne({cardId: newCard.id}, function(err, action) {
+        Action.findOne({_id: newCard.actions[0]}, function(err, action) {
           should.not.exist(err);
           should.exist(action);
           action.creatorId.toString().should.equal(newCard.creatorId.toString());
@@ -75,6 +76,18 @@ describe('Card: Model', function() {
       });
     });
 
+
+    it('should have the list of actions embedded in the card', function(done) {
+      liftn(Card.create.bind(Card), R.merge(c, {creatorId: user.id, listId: board.lists[0]._id}))
+      .then(function(newCard) {
+        should.exist(newCard);
+        should.exist(newCard.actions);
+        (newCard.actions instanceof Array).should.equal(true);
+        should.exist(newCard.actions[0]);
+        done();
+      })
+      .catch(done);
+    });
 
   });
 });

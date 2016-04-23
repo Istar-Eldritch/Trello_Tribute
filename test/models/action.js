@@ -78,14 +78,12 @@ describe('Action: model', function() {
 
 
     it('create a new action for a specific card', function(done) {
-      Action.create(R.merge(a, {creatorId: user.id, cardId: card.id}), function(err, newAction) {
+      Action.create(R.merge(a, {creatorId: user.id}), function(err, newAction) {
         should.not.exist(err);
         should.exist(newAction.creatorId);
         should.exist(newAction.creator);
         should.exist(newAction.creator.id);
         should.exist(newAction.creator.name);
-        // newAction.creator.id.should.equal(user.id);
-        newAction.cardId.toString().should.equal(card.id.toString());
         done();
       });
     });

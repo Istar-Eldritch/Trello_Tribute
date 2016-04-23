@@ -22,7 +22,6 @@ const ActionSchema = new Schema({
     name: String
   },
   created: {type: Date, default: Date.now},
-  cardId: Schema.Types.ObjectId,
   type: String, // TODO Define schemas for different types of data
   data: Object // Dynamic content
 });

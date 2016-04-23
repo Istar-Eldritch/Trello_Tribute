@@ -21,6 +21,10 @@ const CardSchema = new Schema({
     id: Schema.Types.ObjectId,
     name: String,
   },
+  actions: [{
+    type: Schema.Types.ObjectId,
+    ref: 'Action'
+  }],
   boardId: Schema.Types.ObjectId,
   deleted: {type: Boolean, default: false}
 });
@@ -77,6 +81,9 @@ CardSchema.pre('save', function(done) {
       creatorId: this.creatorId,
       cardId: this.id,
       type: 'creation'
+    })
+    .then((newAction) => {
+      this.actions.push(newAction.id);
     });
   };
 
