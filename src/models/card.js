@@ -71,25 +71,21 @@ CardSchema.pre('save', function(done) {
     }
   };
 
+  let createAction = () => {
+    let Action = mongoose.model('Action');
+    return liftn(Action.create.bind(Action), {
+      creatorId: this.creatorId,
+      cardId: this.id,
+      type: 'creation'
+    });
+  };
+
   validateUser()
   .then(validateList)
+  .then(createAction)
   .then(done)
   .catch(done);
 
-});
-
-/**
-* Post Save
-*/
-CardSchema.post('save', function() {
-  const Action = mongoose.model('Action');
-  Action.create({
-    creatorId: this.creatorId,
-    cardId: this.id,
-    boardId: this.boardId,
-    listId: this.listId,
-    type: 'creation'
-  });
 });
 
 module.exports = mongoose.model('Card', CardSchema);

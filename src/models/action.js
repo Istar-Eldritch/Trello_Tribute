@@ -1,8 +1,11 @@
 'use strict';
 
 const mongoose = require('mongoose');
+const R = require('ramda');
+const liftn = require('../common/liftn');
 
 const Schema = mongoose.Schema;
+const Errors = mongoose.Error;
 const User = mongoose.model('User');
 const Board = mongoose.model('Board');
 const Card = mongoose.model('Card');
@@ -14,43 +17,47 @@ const Card = mongoose.model('Card');
 */
 const ActionSchema = new Schema({
   creatorId: Schema.Types.ObjectId,
+  creator: {
+    id: Schema.Types.ObjectId,
+    name: String
+  },
   created: {type: Date, default: Date.now},
-  boardId: Schema.Types.ObjectId,
-  listId: Schema.Types.ObjectId,
   cardId: Schema.Types.ObjectId,
   type: String, // TODO Define schemas for different types of data
   data: Object // Dynamic content
 });
 
+
 /**
-* Virtuals
+* Pre-save
 */
-ActionSchema.virtual('user')
-.set(function(user) {
-  this._user = user;
-  this.creatorId = user.id;
-})
-.get(function() {
-  return this._user;
-});
+ActionSchema.pre('save', function(done) {
+  if(!this.isNew) return done();
 
-ActionSchema.virtual('board')
-.set(function(board) {
-  this._board = board;
-  this.boardId = board.id;
-})
-.get(function() {
-  return this._board;
-});
+  let validateUser = () => {
+    if(R.isNil(this.creatorId)) {
+      return new Promise((resolve, reject) => {
+        let error = new Errors.ValidationError(this);
+        error.errors.creatorId = new Errors.ValidatorError('creatorId', 'Not supplied', 'Not valid', this.creatorId);
+        reject(error);
+      });
+    } else if(R.isNil(this.creator) || (R.isNil(this.creator.id) || R.isNil(this.creator.name))) {
 
-ActionSchema.virtual('card')
-.set(function(card) {
-  this._card = card;
-  this.cardId = card.id;
-  this.boardId = card.boardId;
-})
-.get(function() {
-  return this._card;
+      return liftn(User.findOne.bind(User), {_id: this.creatorId})
+      .then((user) => {
+        this.creator = {
+          name: user.name,
+          id: user.id
+        };
+        return user;
+      });
+    }
+  };
+
+  validateUser()
+  .then(done)
+  .catch(done);
+
 });
 
 
