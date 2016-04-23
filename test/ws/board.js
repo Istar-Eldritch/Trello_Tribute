@@ -324,6 +324,26 @@ describe('board: WS Room', function() {
       });
     });
 
+    it('returns a list of actions embedded in the card', function(done) {
+      let socket = io.connect(socketUrl, R.merge(options, {query: {token: token1}}));
+
+      socket.on('connect', function(err) {
+        socket.emit(`board:watch`, board.id);
+        socket.on(`${channel}:watch`, function(update) {
+          socket.emit(`${channel}:getcards`);
+          socket.on(`${channel}:getcards`, function(cards) {
+            should.exist(cards[0]);
+            card.id.should.equal(cards[0]._id);
+            should.exist(cards[0].actions);
+            cards[0].actions[0].type.should.equal('creation');
+
+            done();
+          });
+        });
+
+      });
+    });
+
 
   });
 
