@@ -61,18 +61,16 @@ describe('User: model', function() {
 
 
     it('should authenticate when provied a correct password', function(done) {
-      user.authenticate(u.password, function(err, result) {
-        should.not.exist(err);
-        result.should.be.true;
+      user.authenticate(u.password).then(function(result) {
+        result.should.equal(true);
         done();
       });
     });
 
 
     it('should not authenticate when provied a wrong password', function(done) {
-      user.authenticate("not a good one", function(err, result) {
-        should.not.exist(err);
-        result.should.be.false;
+      user.authenticate("not a good one").then(function(result) {
+        result.should.equal(false);
         done();
       });
     });

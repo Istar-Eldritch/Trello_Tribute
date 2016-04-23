@@ -7,7 +7,6 @@ const User = mongoose.model('User');
 const Board = mongoose.model('Board');
 const Errors = mongoose.Error;
 const R = require('ramda');
-const liftn = require('../common/liftn');
 
 /**
 * Card Schema
@@ -46,7 +45,7 @@ CardSchema.pre('save', function(done) {
       });
     } else {
       if(this.boardId === undefined) {
-        return liftn(Board.findOne.bind(Board), {lists: {$elemMatch: {_id: this.listId}}})
+        return Board.findOne({lists: {$elemMatch: {_id: this.listId}}})
         .then((result) => {
           this.boardId = result.id;
           return result;
@@ -64,7 +63,7 @@ CardSchema.pre('save', function(done) {
       });
     } else if(R.isNil(this.creator) || (R.isNil(this.creator.id) || R.isNil(this.creator.name))) {
 
-      return liftn(User.findOne.bind(User), {_id: this.creatorId})
+      return User.findOne({_id: this.creatorId})
       .then((user) => {
         this.creator = {
           name: user.name,
@@ -77,7 +76,7 @@ CardSchema.pre('save', function(done) {
 
   let createAction = () => {
     let Action = mongoose.model('Action');
-    return liftn(Action.create.bind(Action), {
+    return Action.create({
       creatorId: this.creatorId,
       cardId: this.id,
       type: 'creation'

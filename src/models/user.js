@@ -2,6 +2,7 @@
 
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
+const liftn = require('../common/liftn');
 
 const Schema = mongoose.Schema;
 const Errors = mongoose.Error;
@@ -30,11 +31,10 @@ UserSchema.virtual('password')
 
 /**
 * Methods
-* TODO Do this async
 */
 UserSchema.methods = {
-  authenticate: function(pwd, cb) {
-    bcrypt.compare(pwd, this.pwd_hash, cb);
+  authenticate: function(pwd) {
+    return liftn(bcrypt.compare.bind(bcrypt), pwd, this.pwd_hash);
   }
 };
 

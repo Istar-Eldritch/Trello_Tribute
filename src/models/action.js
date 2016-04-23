@@ -2,7 +2,6 @@
 
 const mongoose = require('mongoose');
 const R = require('ramda');
-const liftn = require('../common/liftn');
 
 const Schema = mongoose.Schema;
 const Errors = mongoose.Error;
@@ -42,7 +41,7 @@ ActionSchema.pre('save', function(done) {
       });
     } else if(R.isNil(this.creator) || (R.isNil(this.creator.id) || R.isNil(this.creator.name))) {
 
-      return liftn(User.findOne.bind(User), {_id: this.creatorId})
+      return User.findOne({_id: this.creatorId})
       .then((user) => {
         this.creator = {
           name: user.name,

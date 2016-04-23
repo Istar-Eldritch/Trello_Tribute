@@ -16,26 +16,33 @@ const SECRET = config.get('jwt_secret');
 */
 function login (req, res) {
   if(req.body.email && req.body.password) {
-    User.findOne({email: req.body.email}, function(err, user) {
-      if(err) {
-        res.status(400).json(err);
-      } else if(user) {
-        user.authenticate(req.body.password, function(err, valid) {
-          if(valid) {
-            jwt.sign({name: user.name, id: user.id}, SECRET, {expiresIn: "2d"}, function(token) {
-              res.json({token: token});
-            });
-          } else {
-            res.status(400).json({msg: 'Invalid pwd or user'});
-          }
+    User.findOne({email: req.body.email}).exec()
+    .then(function(user) {
+      return user.authenticate(req.body.password)
+      .then(function(success) {
+        if(success) {
+          return user;
+        } else {
+          throw Error();
+        }
+      });
+    })
+    .then(function(user) {
+      return new Promise(function(resolve) {
+        jwt.sign({name: user.name, id: user.id}, SECRET, {expiresIn: "2d"}, function(token) {
+          resolve({token: token});
         });
-      } else {
-        res.status(400).json({msg: 'Invalid pwd or user'});
-      }
+      });
+    })
+    .then(function(token) {
+      res.json(token);
+    })
+    .catch(function(err) {
+      res.status(400).json({msg: "Invalid user or password"});
     });
   }
   else {
-    res.status(400).json({msg: 'Password and user required'});
+    res.status(400).json({msg: 'password and email required'});
   }
 }
 
