@@ -10,14 +10,12 @@ function createboard(socket) {
   let auth = socket.decoded_token;
 
   socket.on('general:createboard', function(board) {
-    User.findOne({_id: auth.id}, function (err, user) {
-      Board.create(R.merge(board, {user: user}), function(err, board) {
-        if(err) {
-          socket.emit('general:createboard:error', err);
-        } else {
-          socket.server.to('general').emit('general:createboard', board);
-        }
-      });
+    Board.create(R.merge(board, {creatorId: auth.id}))
+    .then(function(board) {
+        socket.server.to('general').emit('general:createboard', board);
+    })
+    .catch(function(err){
+      socket.emit('general:createboard:error', err);
     });
   });
 

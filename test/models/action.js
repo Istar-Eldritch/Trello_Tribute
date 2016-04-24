@@ -27,8 +27,7 @@ describe('Action: model', function() {
 
   let b = {
     lists: [{name: "test"}],
-    name: 'Test',
-    user: u
+    name: 'Test'
   };
 
   let c = {
@@ -51,7 +50,7 @@ describe('Action: model', function() {
 
     function createBoardWithUser(newUser) {
       user = newUser;
-      return Board.create(R.merge(b, {user: user}));
+      return Board.create(R.merge(b, {ownerId: user.id, creatorId: user.id}));
     }
 
     function createCardWithBoard(newBoard) {

@@ -51,20 +51,23 @@ describe('board: WS Room', function() {
   var board;
   var channel;
   beforeEach(function(done) {
-    User.create(u1, function(err, result) {
-      if(err) {throw err; }
+    User.create(u1)
+    .then(function(result) {
       user1 = result;
       token1 = jwt.sign({user: user1.name, id: user1.id}, SECRET, {});
-      User.create(u2, function(err, result) {
-        user2 = result;
-        token2 = jwt.sign({user: user2.name, id: user2.id}, SECRET, {});
-        Board.create(R.merge(b, {user: user1}), function(err, b) {
-          board = b;
-          channel = `board:${board.id}`;
-          done();
-        });
-      });
-    });
+      return User.create(u2);
+    })
+    .then(function(result) {
+      user2 = result;
+      token2 = jwt.sign({user: user2.name, id: user2.id}, SECRET, {});
+      return Board.create(R.merge(b, {creatorId: user1.id, ownerId: user1.id}));
+      })
+    .then(function(result) {
+      board = result;
+      channel = `board:${board.id}`;
+      done();
+    })
+    .catch(done);
   });
 
   afterEach(function(done) {

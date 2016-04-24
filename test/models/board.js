@@ -24,38 +24,37 @@ describe('Board: model', function() {
     };
 
 
-    it('should crate a new board providing a user', function(done) {
+    it('should crate a new board providing the creator and the owner', function(done) {
 
-      User.create(u, function(err, newUser) {
-        let board = R.merge(b, {user: newUser});
-
-        Board.create(board, function(err, newBoard) {
-          should.not.exist(err);
-          newBoard.name.should.equal(b.name);
-          newBoard.owner.name.should.equal(newUser.name);
-          should.exist(newBoard.owner.id);
-          done();
-        });
-
-      });
+      User.create(u)
+      .then(function(newUser) {
+        let board = R.merge(b, {creatorId: newUser.id, ownerId: newUser.id});
+        return Board.create(board);
+      })
+      .then(function(newBoard) {
+        newBoard.name.should.equal(b.name);
+        should.exist(newBoard.ownerId);
+        should.exist(newBoard.creatorId);
+        done();
+      })
+      .catch(done);
 
     });
 
     it('should create ids for each one of the lists inserted', function(done) {
 
       let board = R.merge(b, {user: u});
-      User.create(u, function(err, newUser) {
-        let board = R.merge(b, {user: newUser});
-
-        Board.create(board, function(err, newBoard) {
-          should.not.exist(err);
-          newBoard.lists[0].name.should.equal(b.lists[0].name);
-          should.exist(newBoard.lists[0]._id);
-          done();
-        });
-
-      });
-
+      User.create(u)
+      .then(function(newUser) {
+        let board = R.merge(b, {creatorId: newUser.id, ownerId: newUser.id});
+        return Board.create(board);
+      })
+      .then(function(newBoard) {
+        newBoard.lists[0].name.should.equal(b.lists[0].name);
+        should.exist(newBoard.lists[0]._id);
+        done();
+        })
+      .catch(done);
     });
 
 

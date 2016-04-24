@@ -35,14 +35,9 @@ describe('Group: model', function() {
 
   beforeEach(function(done) {
 
-    function createBoardWithUser(newUser) {
-      user = newUser;
-      return Board.create(R.merge(b, {user: user}));
-    }
-
     User.create(u)
-    .then(createBoardWithUser)
-    .then(function() {
+    .then(newUser => {
+      user = newUser;
       done();
     })
     .catch(done);

@@ -34,13 +34,16 @@ describe('Card: Model', function() {
 
   beforeEach(function(done) {
 
-    User.create(u, function(err, newUser) {
+    User.create(u)
+    .then(function(newUser) {
       user = newUser;
-      Board.create(R.merge(b, {user: user}), function(err, newBoard) {
-        board = newBoard;
-        done();
-      });
-    });
+      return Board.create(R.merge(b, {ownerId: user.id, creatorId: user.id}));
+    })
+    .then(function(newBoard) {
+      board = newBoard;
+      done();
+    })
+    .catch(done);
 
   });
 

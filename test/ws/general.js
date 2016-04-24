@@ -12,6 +12,7 @@ const SECRET = config.get('jwt_secret');
 const mongoose = require('mongoose');
 const Board = mongoose.model('Board');
 const User = mongoose.model('User');
+const Group = mongoose.model('Group');
 const jwt = require('jsonwebtoken');
 const R = require('ramda');
 
@@ -20,9 +21,15 @@ const options = {
   reconnectionDelay: 1
 };
 
-const u = {
+const u1 = {
   name: "Ruben",
-  email: "testing@ruben.io",
+  email: "testing1@ruben.io",
+  password: "testing"
+};
+
+const u2 = {
+  name: "Ruben",
+  email: "testing2@ruben.io",
   password: "testing"
 };
 
@@ -32,28 +39,40 @@ const b = {
 
 describe('general: WS Room', function() {
 
-  var token;
-  var user;
+  var token1;
+  var token2;
+  var user1;
+  var user2;
 
   beforeEach(function(done) {
-    User.create(u, function(err, result) {
-      if(err) {throw err; }
-      user = result;
-      token = jwt.sign({user: user.name, id: user.id}, SECRET, {});
-      done();
-    });
+    User.create(u1)
+    .then(function(result) {
+      user1 = result;
+      token1 = jwt.sign({user: user1.name, id: user1.id, groups: user1.groups}, SECRET, {});
+      return User.create(u2);
+    })
+    .then(function(result){
+      user2 = result;
+      token2 = jwt.sign({user: user2.name, id: user2.id, groups: user2.groups}, SECRET, {});
+    })
+    .then(done)
+    .catch(done);
   });
 
   afterEach(function(done) {
-    User.remove({_id: user.id}, function() {
-      done();
-    });
+    User.remove({})
+    .then(function() {
+      return Group.remove({});
+    })
+    .then((succ) => {})
+    .then(done)
+    .catch(done);
   });
 
   describe('general:createboard', function() {
     it('should create a new board', function(done) {
 
-      let socket = io.connect(socketUrl, R.merge(options, {query: {token: token}}));
+      let socket = io.connect(socketUrl, R.merge(options, {query: {token: token1}}));
 
       socket.on('connect_error', function(err) {
         socket.disconnect();
@@ -68,14 +87,16 @@ describe('general: WS Room', function() {
       });
 
       socket.on('connect', function() {
-        socket.emit('general:createboard', b);
+        socket.emit('general:createboard', R.merge(b, {ownerId: user1.id}));
 
         socket.on('general:createboard', function(result) {
           socket.disconnect();
-          Board.findOne({id: result.id}, function(err, createdboard) {
+          Board.findOne({id: result.id})
+          .then(function(createdboard) {
             should.exist(createdboard);
             done();
-          });
+          })
+          .catch(done);
         });
 
         socket.on('general:createboard:error', function(err) {
@@ -90,21 +111,23 @@ describe('general: WS Room', function() {
 
 
     it('should notify all the users subscribed to general', function(done) {
-      let finalOptions = R.merge(options, {query: {token: token}});
+      let finalOptions = R.merge(options, {query: {token: token1}});
       let client1 = io.connect(socketUrl, finalOptions);
 
       client1.on('connect', function() {
         let client2 = io.connect(socketUrl, finalOptions);
         client2.on('connect', function() {
-          client1.emit('general:createboard', b);
+          client1.emit('general:createboard', R.merge(b, {ownerId: user1.id}));
 
           client2.on('general:createboard', function(result) {
             client1.disconnect();
             client2.disconnect();
-            Board.findOne({id: result.id}, function(err, createdboard) {
+            Board.findOne({id: result.id})
+            .then(function(createdboard) {
               should.exist(createdboard);
               done();
-            });
+            })
+            .catch(done);
           });
         });
 
@@ -119,10 +142,12 @@ describe('general: WS Room', function() {
     var board;
 
     beforeEach(function(done) {
-      Board.create(R.merge(b, {user: user}), function(err, newBoard) {
+      Board.create(R.merge(b, {creatorId: user1.id, ownerId: user1.id}))
+      .then(function(newBoard) {
         board = newBoard;
         done();
-      });
+      })
+      .catch(done);
     });
 
     afterEach(function(done) {
@@ -130,7 +155,7 @@ describe('general: WS Room', function() {
     });
 
     it('should return the list of boards', function(done) {
-      let finalOptions = R.merge(options, {query: {token: token}});
+      let finalOptions = R.merge(options, {query: {token: token1}});
       let socket = io.connect(socketUrl, finalOptions);
 
       socket.on('connect', function(err) {
