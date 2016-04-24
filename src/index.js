@@ -23,6 +23,7 @@ require('./models/user');
 require('./models/board');
 require('./models/card');
 require('./models/action');
+require('./models/group');
 
 app.use(bodyParser.json());
 

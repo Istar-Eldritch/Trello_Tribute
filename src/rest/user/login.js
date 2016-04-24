@@ -16,7 +16,8 @@ const SECRET = config.get('jwt_secret');
 */
 function login (req, res) {
   if(req.body.email && req.body.password) {
-    User.findOne({email: req.body.email}).exec()
+    User.findOne({email: req.body.email})
+    .exec()
     .then(function(user) {
       return user.authenticate(req.body.password)
       .then(function(success) {
@@ -29,7 +30,7 @@ function login (req, res) {
     })
     .then(function(user) {
       return new Promise(function(resolve) {
-        jwt.sign({name: user.name, id: user.id}, SECRET, {expiresIn: "2d"}, function(token) {
+        jwt.sign({name: user.name, id: user.id, groups: user.groups}, SECRET, {expiresIn: "2d"}, function(token) {
           resolve({token: token});
         });
       });
