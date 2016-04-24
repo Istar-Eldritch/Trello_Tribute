@@ -47,7 +47,7 @@ io.use(socketiojwt.authorize({
 }));
 
 io.on('connection', function(socket) {
-  require('./wsrooms/context')(socket);
+  require('./contexts/contextHandler')(socket);
 });
 
 module.exports = server;
