@@ -92,12 +92,9 @@ UserSchema.pre('save', function(done) {
         name: this.name,
         id: this.id
       },
-      permissions: [ // TODO This permissions should be generated based on the functions available.
+      permissions: [
         {
-          permission: `general:${this.id}:createboard`
-        },
-        {
-          permission: `general:${this.id}:getboards`
+          permission: `general:${this.id}:*`
         }
       ]
     })

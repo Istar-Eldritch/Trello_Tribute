@@ -72,10 +72,7 @@ describe('Group: model', function() {
         creatorId: user.id,
         permissions: [
           {
-            permission: `general:${user.id}:createboard`
-          },
-          {
-            permission: `general:${user.id}:getboards`
+            permission: `general:${user.id}:*`
           }
         ]
       })
