@@ -8,6 +8,7 @@ require('../src/models/user');
 require('../src/models/board');
 require('../src/models/card');
 require('../src/models/action');
+require('../src/models/group');
 
 
 beforeEach(function(done) {

@@ -1,13 +1,15 @@
 'use strict';
 
 const mongoose = require('mongoose');
+const R = require('ramda');
 const Card = mongoose.model('Card');
+
 
 function getcards(socket, board) {
   let room = `board:${board.id}`;
 
   socket.on(`${room}:getcards`, function(filters) {
-    Card.find(filters || {})
+    Card.find(R.merge(filters, {boardId: board.id}))
     .then(function(cards) {
       return Promise.all(cards.map(Card.populateActions));
     })
