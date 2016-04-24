@@ -46,6 +46,14 @@ describe('User: model', function() {
       });
     });
 
+    it('user should have basic permissions', function(done) {
+      User.create(u, function(err, newUser) {
+        let basic = newUser.groups[0];
+        should.exist(basic);
+        done();
+      });
+    });
+
   });
 
 

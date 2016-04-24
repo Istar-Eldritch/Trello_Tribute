@@ -62,6 +62,8 @@ CardSchema.pre('save', function(done) {
         };
         return user;
       });
+    } else {
+      return new Promise(function(pass, reject) { pass(); });
     }
   };
 

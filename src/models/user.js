@@ -6,6 +6,7 @@ const liftn = require('../common/liftn');
 
 const Schema = mongoose.Schema;
 const Errors = mongoose.Error;
+const ObjectId = Schema.Types.ObjectId;
 
 /**
 * User Schema
@@ -15,6 +16,7 @@ const UserSchema = new Schema({
   name: String,
   email: String,
   pwd_hash: String,
+  groups: [{type: ObjectId, ref: 'Group'}],
   created: {type: Date, default: Date.now}
 });
 
@@ -57,23 +59,59 @@ UserSchema.path('email').validate(function (email, cb) {
 /**
 * Pre-save
 */
-UserSchema.pre('save', function(next) {
-  if(!this.isNew) return next();
+UserSchema.pre('save', function(done) {
+  if(!this.isNew) return done();
 
-  if(!(this.password && this.password.length > 5)) {
-    let error = new Errors.ValidationError(this);
-    error.errors.password = new Errors.ValidatorError('password', 'Not valid', 'Not valid', this.password);
-    next(error);
-  }
-  else {
-    // Hash the password
-    bcrypt.genSalt(10, (err, salt) => {
-      bcrypt.hash(this.password, salt, (err, hash) => {
-        this.pwd_hash = hash;
-        next();
-      });
+  this.id = new ObjectId();
+
+  let hashPassword = () => {
+    return new Promise((pass, reject) => {
+      if(!(this.password && this.password.length > 5)) {
+        let error = new Errors.ValidationError(this);
+        error.errors.password = new Errors.ValidatorError('password', 'Not valid', 'Not valid', this.password);
+        reject(error);
+      }
+      else {
+        // Hash the password
+        bcrypt.genSalt(10, (err, salt) => {
+          bcrypt.hash(this.password, salt, (err, hash) => {
+            this.pwd_hash = hash;
+            pass();
+          });
+        });
+      }
     });
-  }
+  };
+
+  let setPermissions = () => {
+    let Group = mongoose.model('Group');
+    return Group.create({
+      name: 'Basic',
+      creatorId: this.id,
+      creator: {
+        name: this.name,
+        id: this.id
+      },
+      permissions: [ // TODO This permissions should be generated based on the functions available.
+        {
+          permission: `general:${this.id}:createboard`
+        },
+        {
+          permission: `general:${this.id}:getboards`
+        }
+      ]
+    })
+    .then((newGroup) => {
+      this.groups.push(newGroup.id);
+    });
+  };
+
+  hashPassword()
+  .then(setPermissions)
+  // .then(result => {})
+  .then(done)
+  .catch(done);
+
 });
 
 // Exports
