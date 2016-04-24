@@ -4,7 +4,7 @@ const mongoose = require('mongoose');
 const Board = mongoose.model('Board');
 
 function updateboard(socket, board) {
-  let room = `board:${board.id}`;
+  let room = `context:${board.id}`;
 
   socket.on(`${room}:updateboard`, function(updates) {
     //TODO validate updates, we do not want people overriding important fields.

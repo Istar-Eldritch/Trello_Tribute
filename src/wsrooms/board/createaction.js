@@ -5,7 +5,7 @@ const Action = mongoose.model('Action');
 const R = require('ramda');
 
 function createaction(socket, board) {
-  let room = `board:${board.id}`;
+  let room = `context:${board.id}`;
 
   socket.on(`${room}:createaction`, function(action) {
     let finalAction = R.merge(action, {

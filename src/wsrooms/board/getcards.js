@@ -2,11 +2,12 @@
 
 const mongoose = require('mongoose');
 const R = require('ramda');
+
 const Card = mongoose.model('Card');
 
 
 function getcards(socket, board) {
-  let room = `board:${board.id}`;
+  let room = `context:${board.id}`;
 
   socket.on(`${room}:getcards`, function(filters) {
     Card.find(R.merge(filters, {boardId: board.id}))

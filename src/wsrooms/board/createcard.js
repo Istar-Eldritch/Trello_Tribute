@@ -5,7 +5,7 @@ const Card = mongoose.model('Card');
 const R = require('ramda');
 
 function createcard(socket, board) {
-  let room = `board:${board.id}`;
+  let room = `context:${board.id}`;
 
   socket.on(`${room}:createcard`, function(card) {
     let finalCard = R.merge(card, {

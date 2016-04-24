@@ -64,7 +64,7 @@ describe('board: WS Room', function() {
       })
     .then(function(result) {
       board = result;
-      channel = `board:${board.id}`;
+      channel = `context:${board.id}`;
       done();
     })
     .catch(done);
@@ -86,7 +86,7 @@ describe('board: WS Room', function() {
       let client1 = io.connect(socketUrl, R.merge(options, {query: {token: token1}}));
 
       client1.on('connect', function(err) {
-        client1.emit(`board:watch`, board.id);
+        client1.emit(`context:watch`, 'board', board.id);
 
         client1.on(`${channel}:watch`, function(update) {
           client1.disconnect();
@@ -103,10 +103,10 @@ describe('board: WS Room', function() {
 
       client1.on('connect', function(err) {
         let client2 = io.connect(socketUrl, R.merge(options, {query: {token: token2}}));
-        client1.emit(`board:watch`, board.id);
+        client1.emit(`context:watch`, 'board', board.id);
 
         client2.on('connect', function(err) {
-          client2.emit(`board:watch`, board.id);
+          client2.emit(`context:watch`, 'board', board.id);
           client1.on(`${channel}:watch`, function(update) {
             update.list.length.should.equal(2);
             client1.disconnect();
@@ -130,7 +130,7 @@ describe('board: WS Room', function() {
       let socket = io.connect(socketUrl, R.merge(options, {query: {token: token1}}));
 
       socket.on('connect', function(err) {
-        socket.emit(`board:watch`, board.id);
+        socket.emit(`context:watch`, 'board', board.id);
 
         socket.on(`${channel}:watch`, function(update) {
           socket.emit(`${channel}:updateboard`, {lists: [{name: 'Testing'}]} );
@@ -157,13 +157,13 @@ describe('board: WS Room', function() {
       let client1 = io.connect(socketUrl, R.merge(options, {query: {token: token1}}));
 
       client1.on('connect', function(err) {
-        client1.emit(`board:watch`, board.id);
+        client1.emit(`context:watch`, 'board', board.id);
 
         client1.on(`${channel}:watch`, function(update) {
           let client2 = io.connect(socketUrl, R.merge(options, {query: {token: token2}}));
 
           client2.on('connect', function(err) {
-            client2.emit(`board:watch`, board.id);
+            client2.emit(`context:watch`, 'board', board.id);
 
             client2.on(`${channel}:watch`, function(update) {
               client1.emit(`${channel}:updateboard`, {name: 'Another'} );
@@ -201,7 +201,7 @@ describe('board: WS Room', function() {
       let client1 = io.connect(socketUrl, R.merge(options, {query: {token: token1}}));
 
       client1.on('connect', function(err) {
-        client1.emit(`board:watch`,board.id);
+        client1.emit(`context:watch`, 'board', board.id);
         client1.on(`${channel}:watch`, function(update) {
           client1.emit(`${channel}:createcard`, R.merge(c, {listId: board.lists[0]._id}));
           client1.on(`${channel}:createcard`, function(card) {
@@ -218,13 +218,13 @@ describe('board: WS Room', function() {
       let client1 = io.connect(socketUrl, R.merge(options, {query: {token: token1}}));
 
       client1.on('connect', function(err) {
-        client1.emit(`board:watch`, board.id);
+        client1.emit(`context:watch`, 'board', board.id);
 
         client1.on(`${channel}:watch`, function(update) {
           let client2 = io.connect(socketUrl, R.merge(options, {query: {token: token2}}));
 
           client2.on('connect', function(err) {
-            client2.emit(`board:watch`, board.id);
+            client2.emit('context:watch', 'board', board.id);
 
             client2.on(`${channel}:watch`, function(update) {
               client1.emit(`${channel}:createcard`, R.merge(c, {listId: board.lists[0]._id}));
@@ -267,7 +267,7 @@ describe('board: WS Room', function() {
       let client1 = io.connect(socketUrl, R.merge(options, {query: {token: token1}}));
 
       client1.on('connect', function(err) {
-        client1.emit(`board:watch`,board.id);
+        client1.emit(`context:watch`, 'board', board.id);
         client1.on(`${channel}:watch`, function(update) {
           client1.emit(`${channel}:createaction`, R.merge(c, {
             cardId: card.id,
@@ -314,7 +314,7 @@ describe('board: WS Room', function() {
       let socket = io.connect(socketUrl, R.merge(options, {query: {token: token1}}));
 
       socket.on('connect', function(err) {
-        socket.emit(`board:watch`, board.id);
+        socket.emit('context:watch', 'board', board.id);
         socket.on(`${channel}:watch`, function(update) {
           socket.emit(`${channel}:getcards`);
           socket.on(`${channel}:getcards`, function(cards) {
@@ -330,7 +330,7 @@ describe('board: WS Room', function() {
       let socket = io.connect(socketUrl, R.merge(options, {query: {token: token1}}));
 
       socket.on('connect', function(err) {
-        socket.emit(`board:watch`, board.id);
+        socket.emit('context:watch', 'board', board.id);
         socket.on(`${channel}:watch`, function(update) {
           socket.emit(`${channel}:getcards`);
           socket.on(`${channel}:getcards`, function(cards) {

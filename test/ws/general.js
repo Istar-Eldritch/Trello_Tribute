@@ -87,24 +87,30 @@ describe('general: WS Room', function() {
       });
 
       socket.on('connect', function() {
-        socket.emit('general:createboard', R.merge(b, {ownerId: user1.id}));
 
-        socket.on('general:createboard', function(result) {
-          socket.disconnect();
-          Board.findOne({id: result.id})
-          .then(function(createdboard) {
-            should.exist(createdboard);
+        let room = `context:${user1.id}`;
+
+        socket.emit('context:watch', 'dashboard', user1.id);
+
+        socket.on(`${room}:watch`, function(connected) {
+          socket.emit(`${room}:createboard`, R.merge(b, {ownerId: user1.id}));
+
+          socket.on(`${room}:createboard`, function(result) {
+            socket.disconnect();
+            Board.findOne({id: result.id})
+            .then(function(createdboard) {
+              should.exist(createdboard);
+              done();
+            })
+            .catch(done);
+          });
+
+          socket.on('general:createboard:error', function(err) {
+            socket.disconnect();
+            should.not.exist(err);
             done();
-          })
-          .catch(done);
+          });
         });
-
-        socket.on('general:createboard:error', function(err) {
-          socket.disconnect();
-          should.not.exist(err);
-          done();
-        });
-
       });
 
     });
@@ -114,20 +120,27 @@ describe('general: WS Room', function() {
       let finalOptions = R.merge(options, {query: {token: token1}});
       let client1 = io.connect(socketUrl, finalOptions);
 
-      client1.on('connect', function() {
-        let client2 = io.connect(socketUrl, finalOptions);
-        client2.on('connect', function() {
-          client1.emit('general:createboard', R.merge(b, {ownerId: user1.id}));
+      let room = `context:${user1.id}`;
 
-          client2.on('general:createboard', function(result) {
-            client1.disconnect();
-            client2.disconnect();
-            Board.findOne({id: result.id})
-            .then(function(createdboard) {
-              should.exist(createdboard);
-              done();
-            })
-            .catch(done);
+      client1.on('connect', function() {
+        client1.emit(`context:watch`, 'dashboard', user1.id);
+        client1.on(`${room}:watch`, function(connected) {
+          let client2 = io.connect(socketUrl, finalOptions);
+          client2.on('connect', function() {
+            client2.emit(`context:watch`, 'dashboard', user1.id);
+            client2.on(`${room}:watch`, function(connected) {
+              client1.emit(`${room}:createboard`, R.merge(b, {ownerId: user1.id}));
+              client2.on(`${room}:createboard`, function(result) {
+                client1.disconnect();
+                client2.disconnect();
+                Board.findOne({id: result.id})
+                .then(function(createdboard) {
+                  should.exist(createdboard);
+                  done();
+                })
+                .catch(done);
+              });
+            });
           });
         });
 
@@ -138,7 +151,7 @@ describe('general: WS Room', function() {
   });
 
 
-  describe('general:getboards', function() {
+  describe('dashboard:getboards', function() {
     var board;
 
     beforeEach(function(done) {
@@ -159,10 +172,14 @@ describe('general: WS Room', function() {
       let socket = io.connect(socketUrl, finalOptions);
 
       socket.on('connect', function(err) {
-        socket.emit('general:getboards');
-        socket.on('general:getboards', function(boards) {
-          board.id.should.equal(boards[0]._id);
-          done();
+        let room = `context:${user1.id}`;
+        socket.emit(`context:watch`, 'dashboard', user1.id);
+        socket.on(`${room}:watch`, function(connected) {
+          socket.emit(`${room}:getboards`);
+          socket.on(`${room}:getboards`, function(boards) {
+            board.id.should.equal(boards[0]._id);
+            done();
+          });
         });
       });
     });
