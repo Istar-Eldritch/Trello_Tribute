@@ -4,12 +4,12 @@ const mongoose = require('mongoose');
 const Card = mongoose.model('Card');
 const R = require('ramda');
 
-function createcard(socket, board) {
-  let room = `context:${board.id}`;
+function createcard(socket, boardId) {
+  let room = `context:${boardId}`;
 
   socket.on(`${room}:createcard`, function(card) {
     let finalCard = R.merge(card, {
-      boardId: board.id,
+      boardId: boardId,
       creatorId: socket.decoded_token.id
     });
 

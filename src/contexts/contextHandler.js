@@ -20,7 +20,7 @@ function context(socket) {
   socket.on('context:watch', function(contextType, id) {
     // TODO add ACL policies here
     let room = `context:${id}`;
-    
+
     if(contextType === 'board') {
       Board.findOne({_id: id}, function (err, board) {
 
@@ -28,7 +28,7 @@ function context(socket) {
         if(board) {
           socket.join(room);
           wsBoardFunctions.forEach((fn) => {
-            fn(socket, board);
+            fn(socket, board.id);
           });
 
           let sockets = R.values(socket.server.nsps['/'].adapter.rooms[room]);

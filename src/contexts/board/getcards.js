@@ -6,11 +6,11 @@ const R = require('ramda');
 const Card = mongoose.model('Card');
 
 
-function getcards(socket, board) {
-  let room = `context:${board.id}`;
+function getcards(socket, boardId) {
+  let room = `context:${boardId}`;
 
   socket.on(`${room}:getcards`, function(filters) {
-    Card.find(R.merge(filters, {boardId: board.id}))
+    Card.find(R.merge(filters, {boardId: boardId}))
     .then(function(cards) {
       return Promise.all(cards.map(Card.populateActions));
     })
